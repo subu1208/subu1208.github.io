@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subasri Govindan</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #4B50C8;
+    --cream-dark: #3F44B8;
+    --sage: #7B80E0;
+    --sage-light: #9098F0;
+    --sage-dark: #E8EAFF;
+    --terracotta: #C8CAFF;
+    --terracotta-light: rgba(200,202,255,0.18);
+    --brown: #F0F0FF;
+    --text: #F0F0FF;
+    --text-muted: #C8CAFF;
+    --text-hint: #9098D8;
+    --border: rgba(200,202,255,0.15);
+    --border-mid: rgba(200,202,255,0.25);
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: linear-gradient(180deg, #5755bf 0%, #493f86 100%);
+    min-height: 100vh;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Floating squares background */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .sq {
+    position: absolute;
+    border-radius: 4px;
+    border: 1.5px solid rgba(200,202,255,0.45);
+    opacity: 0;
+    animation: floatDown linear infinite;
+  }
+  @keyframes floatDown {
+    0%   { transform: translateY(-80px) rotate(0deg);   opacity: 0; }
+    10%  { opacity: 0.55; }
+    90%  { opacity: 0.35; }
+    100% { transform: translateY(110vh) rotate(180deg); opacity: 0; }
+  }
+
+  /* Nav */
+  nav {
+    position: static;
+    z-index: 100;
+    display: flex; justify-content: flex-end; gap: 1.5rem;
+    padding: 1.2rem 2rem;
+    background: transparent;
+    max-width: 400px;
+    margin-left: auto;
+  }
+  nav a {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--terracotta); }
+
+  /* Back to top button */
+  #top-btn {
+    position: fixed;
+    bottom: 5rem;
+    right: 2rem;
+    z-index: 200;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(87,85,191,0.6);
+    border: 1px solid rgba(200,202,255,0.35);
+    color: #F0F0FF;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s, background 0.2s;
+    backdrop-filter: blur(6px);
+  }
+  #top-btn.visible { opacity: 1; }
+  #top-btn:hover { background: rgba(87,85,191,0.9); }
+
+  /* Sections */
+  section {
+    position: relative; z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+  section:first-of-type {
+    padding-top: 2rem;
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Hero */
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-hint);
+    margin-bottom: 1.5rem;
+  }
+  h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    line-height: 1.25;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  h1 strong { font-weight: 500; color: var(--brown); }
+  .typewriter-line {
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    min-height: 40px;
+  }
+  .typewriter-line span#typed {
+    color: var(--terracotta);
+    border-right: 2px solid #C8CAFF;
+    padding-right: 2px;
+  }
+  .hero-bio {
+    font-size: 16px;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.9);
+    max-width: 580px;
+    margin-bottom: 2rem;
+  }
+  .hero-bio a {
+    color: var(--sage-dark);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Section headings */
+  .section-fn {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-mid);
+  }
+  .section-fn span { color: var(--terracotta); }
+
+  /* Experience */
+  .exp-item { margin-bottom: 1.1rem; }
+  .exp-role {
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .exp-role a { color: rgba(255,255,255,0.9); text-decoration: none; }
+  .exp-role a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .exp-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-hint);
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+  .exp-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* Projects */
+  .project-card {
+    border: 0.5px solid var(--border-mid);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    background: rgba(255,255,255,0.06);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .project-card:hover {
+    border-color: var(--terracotta-light);
+    background: rgba(255,255,255,0.12);
+  }
+  .project-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .project-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--brown);
+  }
+  .project-links { display: flex; gap: 10px; }
+  .project-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-hint);
+    text-decoration: none;
+    border: 0.5px solid var(--border-mid);
+    padding: 3px 9px;
+    border-radius: 20px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .project-links a:hover { color: var(--terracotta); border-color: var(--terracotta-light); }
+  .project-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+  .project-stack {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-hint);
+  }
+
+  /* View more button */
+  .view-more-btn {
+    display: block;
+    margin: 1.5rem auto 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-hint);
+    background: transparent;
+    border: 0.5px solid var(--border-mid);
+    padding: 8px 24px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .view-more-btn:hover { color: var(--terracotta); border-color: var(--terracotta-light); }
+
+  /* Modal */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20,18,40,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: #4b4290;
+    border: 0.5px solid var(--border-mid);
+    border-radius: 16px;
+    width: min(680px, 88vw);
+    max-height: 75vh;
+    overflow-y: auto;
+    padding: 2rem;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200,202,255,0.2) transparent;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 0.5px solid var(--border-mid);
+  }
+  .modal-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-hint);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--text); }
+  .interests-layout {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+  }
+  .interests-text {
+    flex: 1;
+  }
+  .interest-para {
+    font-size: 15px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.8;
+    margin-bottom: 1.2rem;
+  }
+  .interest-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 1rem;
+  }
+  .interest-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border-mid);
+    color: var(--text-hint);
+  }
+  .interests-photo {
+    flex: 0 0 240px;
+  }
+  .interests-photo img {
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+    object-position: center top;
+    height: 340px;
+    opacity: 0.9;
+  }
+
+  /* Footer */
+  footer {
+    position: relative; z-index: 1;
+    padding: 1.5rem 2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-hint);
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-icons {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    margin-right: 5rem;
+  }
+  .footer-icons a {
+    color: rgba(255,255,255,0.5);
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  .footer-icons a:hover { color: rgba(255,255,255,0.9); }
+
+  /* Tags / Pills */
+  .tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(200,202,255,0.18);
+    color: #F0F0FF;
+    margin-right: 5px;
+    margin-top: 4px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .tag:hover { background: rgba(200,202,255,0.32); }
+</style>
+</head>
+<body>
+
+<!-- Floating squares background -->
+<div id="bg-canvas"></div>
+
+<!-- Back to top button -->
+<button id="top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
+<!-- Nav -->
+<nav>
+  <a href="#experience">experience</a>
+  <span style="color:var(--text-hint);opacity:0.5;">·</span>
+  <a href="#projects">projects</a>
+  <span style="color:var(--text-hint);opacity:0.5;">·</span>
+  <a href="#interests">interests</a>
+  <span style="color:var(--text-hint);opacity:0.5;">·</span>
+  <a href="mailto:subasri.govindan@berkeley.edu">email</a>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <p class="hero-label">Data & ML Engineer · Bay Area, CA</p>
+  <h1>Hi, my name is <strong>Subasri Govindan.</strong></h1>
+  <p class="typewriter-line">I'm into <span id="typed"></span></p>
+  <p class="hero-bio">
+    UC Berkeley Master of Analytics graduate, working at the intersection of data engineering and machine learning. At Cardinality AI, I build production data systems for health and human services, the infrastructure that makes ML reliable at scale. Outside of work, I explore the ML side: agentic AI systems using LangGraph and MCP, NLP classifiers, and RAG pipelines. Previously at Accelalpha (IBM), I built semantic search over 15,000+ slides. I also served as Corporate Relations Associate for Analytics@Berkeley.
+  </p>
+  <div>
+    <a class="tag" href="https://github.com/subu1208" target="_blank">GitHub</a>
+    <a class="tag" href="https://www.linkedin.com/in/subasrig12" target="_blank">LinkedIn</a>
+  </div>
+  </p>
+  </div>
+</section>
+
+<!-- Experience -->
+<section id="experience">
+  <p class="section-fn">✦ <span>Experience</span></p>
+
+  <div class="exp-item">
+    <p class="exp-role">Junior Data Analyst @ <a href="https://www.cardyai.com/" target="_blank">Cardinality AI</a></p>
+    <p class="exp-date">Jan 2026 – Present</p>
+  </div>
+
+  <div class="exp-item">
+    <p class="exp-role">AI Systems Intern @ <a href="https://www.cal4care.com/" target="_blank">Cal4Care USA LLC</a></p>
+    <p class="exp-date">Nov 2025 – Jan 2026</p>
+  </div>
+
+  <div class="exp-item">
+    <p class="exp-role">AI Intern @ <a href="https://www.ibm.com/consulting/accelalpha" target="_blank">Accelalpha (IBM)</a></p>
+    <p class="exp-date">Jun 2025 – Aug 2025</p>
+  </div>
+
+  <div class="exp-item">
+    <p class="exp-role">Corporate Relations Associate @ <a href="https://www.linkedin.com/company/analytics-berkeley/" target="_blank">Analytics at Berkeley</a></p>
+    <p class="exp-date">Aug 2024 – May 2025</p>
+  </div>
+
+  <div class="exp-item">
+    <p class="exp-role">Data Scientist Intern @ <a href="https://www.ideas2it.com" target="_blank">Ideas2IT Technologies</a></p>
+    <p class="exp-date">Oct 2023 – May 2024</p>
+  </div>
+
+  <div class="exp-item">
+    <p class="exp-role">Executive Head @ <a href="https://www.linkedin.com/company/know-i-club/" target="_blank">Know-I (Machine Learning Research Club)</a></p>
+    <p class="exp-date">Aug 2022 – May 2023</p>
+  </div>
+
+</section>
+
+<!-- Projects -->
+<section id="projects">
+  <p class="section-fn">✦ <span>Projects</span></p>
+
+  <div class="project-card">
+    <div class="project-top">
+      <p class="project-name">MCP Research Agent</p>
+      <div class="project-links">
+        <a href="https://github.com/subu1208/mcp-research-agent" target="_blank">GitHub</a>
+      </div>
+    </div>
+    <p class="project-desc">I wanted a research assistant that actually kept up with what I was reading — so I built one. It pulls from 3 MCP servers, runs a full RAG pipeline with ChromaDB, and I spent time AB testing cosine distance thresholds until fallback accuracy went from 50% to 75%. 11 passing tests and a Streamlit interface I actually use.</p>
+    <p class="project-stack">LangGraph · MCP · ChromaDB · Claude API · Streamlit · all-MiniLM-L6-v2</p>
+  </div>
+
+  <div class="project-card">
+    <div class="project-top">
+      <p class="project-name">Agentic Hiring Plan Generator</p>
+      <div class="project-links">
+        <a href="https://github.com/subu1208/startup-hiring-planner" target="_blank">GitHub</a>
+      </div>
+    </div>
+    <p class="project-desc">Recruiting is repetitive in ways that felt very solvable. This agent handles job description drafting and candidate outreach for 20+ startup roles, with persistent state so it remembers context across the workflow. Built the full pipeline with LangGraph and OpenRouter — less clicking, more hiring.</p>
+    <p class="project-stack">LangGraph · Streamlit · GPT-3.5 · OpenRouter</p>
+  </div>
+
+  <div class="project-card">
+    <div class="project-top">
+      <p class="project-name">Resume AI Detection</p>
+      <div class="project-links">
+        <a href="https://github.com/subu1208/resume-ai-detection" target="_blank">GitHub</a>
+      </div>
+    </div>
+    <p class="project-desc">As AI-generated resumes became harder to spot, I wanted to see if a model could do it reliably. Fine-tuned DistilBERT and benchmarked it against TF-IDF and GloVe baselines — ended up at 98.99% accuracy (AUC: 0.9992). Added SHAP attribution and embedding cluster visualizations to understand what the model was actually picking up on.</p>
+    <p class="project-stack">DistilBERT · TF-IDF + Logistic Regression · GloVe + MLP · SHAP · UMAP · PCA · Python · HuggingFace</p>
+  </div>
+
+  <div class="project-card">
+    <div class="project-top">
+      <p class="project-name">Staffing Optimization — Google Ads Model</p>
+      <div class="project-links"></div>
+    </div>
+    <p class="project-desc">A case study competition that turned into a real optimization problem. Forecasted advertiser demand using Prophet, ARIMA, and XGBoost (26.56% MAPE), then used Gurobi to solve workforce allocation as an integer linear program. The result was a $176.79M profit optimization — on paper, at least.</p>
+    <p class="project-stack">Gurobi · Prophet · ARIMA · XGBoost · Python · R</p>
+  </div>
+
+  <button class="view-more-btn" onclick="document.getElementById('projectModal').classList.add('open')">more projects</button>
+</section>
+
+<!-- Projects Modal -->
+<div class="modal-backdrop" id="projectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✦ More Projects</span>
+      <button class="modal-close" onclick="document.getElementById('projectModal').classList.remove('open')">✕</button>
+    </div>
+
+    <div class="project-card">
+      <div class="project-top">
+        <p class="project-name">Clinical Decision Support with NLP</p>
+        <div class="project-links"></div>
+      </div>
+      <p class="project-desc">Physicians shouldn't have to dig through walls of unformatted text to find relevant notes. We built an end-to-end pipeline that cleans raw EHR transcriptions, engineers features like symptom flags, sentiment, and LDA topic distributions, then retrieves the most relevant historical cases for a given symptom query. Combined FAISS semantic search with BM25 lexical matching in a hybrid retrieval system — balancing meaning and keyword precision.</p>
+      <p class="project-stack">OpenAI text-embedding-3-small · FAISS · BM25 · LDA · TF-IDF · Python · MTSamples</p>
+    </div>
+
+    <div class="project-card">
+      <div class="project-top">
+        <p class="project-name">Pathways to Mental Wellness</p>
+        <div class="project-links">
+          <a href="https://github.com/subu1208/pathways-to-mental-wellness" target="_blank">GitHub</a>
+        </div>
+      </div>
+      <p class="project-desc">Mental health data is messy and high-stakes. Using SAMHSA's Mental Health Client-Level Data spanning 2020-2022, we built and compared multiple classifiers to predict depression risk from demographic, clinical, and socioeconomic features. XGBoost came out on top at 82.6% accuracy. Key predictors included bipolar disorder flags, anxiety disorders, education level, and geographic indicators — findings with real implications for resource allocation and targeted intervention.</p>
+      <p class="project-stack">XGBoost · Random Forest · Logistic Regression · SVM · Scikit-learn · Python · SAMHSA Dataset</p>
+    </div>
+
+    <div class="project-card">
+      <div class="project-top">
+        <p class="project-name">Tour Routing Optimization with TSP</p>
+        <div class="project-links"></div>
+      </div>
+      <p class="project-desc">Started with a fun question: could Taylor Swift's tour routing have been more efficient? Used Gurobi to solve the Traveling Salesman Problem across her Fearless and Reputation tour stops, with a 1% MIPGap to handle the NP-hard complexity, then compared it against a Nearest Neighbor greedy heuristic. TSP reduced total travel distance by up to 2,774 km — and the route maps made the trade-off between optimality and computation very visual.</p>
+      <p class="project-stack">Gurobi · Integer Linear Programming · TSP · Nearest Neighbor Heuristic · Python</p>
+    </div>
+
+    <div class="project-card">
+      <div class="project-top">
+        <p class="project-name">Human Violence Detection with Integrated Alarm System</p>
+        <div class="project-links">
+          <a href="https://github.com/subu1208/violence-detection" target="_blank">GitHub</a>
+          <a href="https://link.springer.com/article/10.3103/S0146411625701159" target="_blank">Publication</a>
+        </div>
+      </div>
+      <p class="project-desc">Built a real-time system that detects violence in video footage and triggers an IoT buzzer alarm the moment it does. The approach fuses pose estimation and change detection, classified through an LSTM network — hitting 92% accuracy. Published in Springer.</p>
+      <p class="project-stack">LSTM · Pose Estimation · IoT · OpenCV · Python</p>
+    </div>
+
+    <div class="project-card">
+      <div class="project-top">
+        <p class="project-name">IoT-Based Smart Systems using ML and AI</p>
+        <div class="project-links">
+          <a href="https://drive.google.com/file/d/1WsPozpzOtfLL-ED5sW4ubLh3onhs7OG5/view" target="_blank">Patent</a>
+        </div>
+      </div>
+      <p class="project-desc">An early project that ended up becoming a patent. Used SVM to monitor user behavior across IoT networks, flagging irregularities and generating security alerts. Addressed the harder problem of heterogeneous devices and high data volume at scale — work that contributed to establishing broader IoT security standards.</p>
+      <p class="project-stack">SVM · IoT · Network Security · Python · Machine Learning</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Interests -->
+<section id="interests">
+  <p class="section-fn">✦ <span>Interests</span></p>
+  <div class="interests-layout">
+    <div class="interests-text">
+      <p class="interest-para">I'm someone who tries a lot of things. A new sport, a film in a language I barely speak, a trail I haven't been on. This curiosity is probably what led me to ML.</p>
+      <p class="interest-para">Outside, that looks like picking up any sport given the chance and getting hooked. Badminton, pickleball, archery, you name it. Competitive at heart, but the fun always comes first.</p>
+      <p class="interest-para">Inside, it's usually a book or a screen. I watch an embarrassing amount of Asian cinema and drama, slowly picking up languages one subtitle at a time. When I'm not watching, I'm reading — always in the middle of something.</p>
+    </div>
+    <div class="interests-photo">
+      <img src="IMG_8115.jpeg" alt="Subasri at Casa del Prado" />
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-icons">
+    <a href="https://www.linkedin.com/in/subasrig12" target="_blank" title="LinkedIn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+      </svg>
+    </a>
+    <a href="https://github.com/subu1208" target="_blank" title="GitHub">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+    </a>
+    <a href="mailto:subasri.govindan@berkeley.edu" title="Email">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M0 3v18h24v-18h-24zm6.623 7.929l-4.623 5.712v-9.458l4.623 3.746zm-4.141-5.929h19.035l-9.517 7.713-9.518-7.713zm5.694 7.188l3.824 3.099 3.83-3.104 5.612 6.817h-18.779l5.513-6.812zm9.208-1.264l4.616-3.741v9.348l-4.616-5.607z"/>
+      </svg>
+    </a>
+  </div>
+  <span>© 2026 Subasri Govindan</span>
+</footer>
+
+<script>
+  /* Typewriter effect */
+  const words = [
+    "finding patterns in the chaos.",
+    "discovering new music.",
+    "learning languages.",
+    "solving problems.",
+    "building agentic AI systems.",
+    "reading.",
+    "outdoor adventures."
+  ];
+  let wi = 0, ci = 0, deleting = false;
+  const el = document.getElementById('typed');
+
+  function type() {
+    const word = words[wi];
+    if (!deleting) {
+      el.textContent = word.slice(0, ci + 1);
+      ci++;
+      if (ci === word.length) {
+        deleting = true;
+        setTimeout(type, 2800);
+        return;
+      }
+    } else {
+      el.textContent = word.slice(0, ci - 1);
+      ci--;
+      if (ci === 0) {
+        deleting = false;
+        wi = (wi + 1) % words.length;
+      }
+    }
+    setTimeout(type, deleting ? 65 : 110);
+  }
+  type();
+
+  /* Floating squares */
+  const canvas = document.getElementById('bg-canvas');
+  const sizes = [14, 18, 22, 26, 20];
+  for (let i = 0; i < 8; i++) {
+    const sq = document.createElement('div');
+    sq.className = 'sq';
+    const size = sizes[i % sizes.length];
+    const dur = 12 + Math.random() * 14;
+    const delay = i < 4 ? -(Math.random() * dur) : Math.random() * 4;
+    sq.style.cssText = `
+      width: ${size}px;
+      height: ${size}px;
+      left: ${Math.random() * 100}%;
+      animation-duration: ${dur}s;
+      animation-delay: ${delay}s;
+    `;
+    canvas.appendChild(sq);
+  }
+
+  /* Close modal on backdrop click */
+  document.getElementById('projectModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+
+  /* Back to top button */
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.classList.toggle('visible', window.scrollY > 300);
+  });
+</script>
+</body>
+</html>
